@@ -2,6 +2,12 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
+print("HELLO FROM ACTIONS - SCRIPT STARTED")
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+}
+
 VENDOR_KEYWORDS = ["bt-miners", "bt miners", "bt-miners.com"]
 
 with open("config.json", "r", encoding="utf-8") as f:
@@ -21,28 +27,29 @@ alert_list = []
 
 for url in urls:
     print(f"\nChecking: {url}")
+
     try:
-        resp = requests.get(url, timeout=20)
+        resp = requests.get(url, headers=HEADERS, timeout=25)
+        print(f"HTTP status: {resp.status_code}")
         resp.raise_for_status()
     except Exception as e:
-        print(f"❌ ERROR loading page: {e}")
-        alert_list.append((url, "PAGE ERROR"))
+        print(f"❌ REQUEST ERROR: {e}")
+        alert_list.append((url, "REQUEST ERROR"))
         continue
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
     rows = soup.select("table tbody tr")
-    vendors = []
+    print(f"Found {len(rows)} vendor rows")
 
+    vendors = []
     for r in rows:
         tds = r.find_all("td")
-        if not tds:
-            continue
-        vendor = tds[0].get_text(strip=True)
-        vendors.append(vendor)
+        if tds:
+            vendors.append(tds[0].get_text(strip=True))
 
     if not vendors:
-        print("❌ No vendor list found")
+        print("❌ NO VENDOR TABLE FOUND")
         alert_list.append((url, "NO DATA"))
         continue
 
