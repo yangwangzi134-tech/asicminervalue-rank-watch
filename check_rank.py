@@ -1,3 +1,4 @@
+raise SystemExit("FORCE EXIT TEST")
 import json
 import requests
 from bs4 import BeautifulSoup
